@@ -8,9 +8,11 @@ import {
   findOne,
   UserFindById as findUserById,
   savePassword,
-  findPasswordsByUserId
+  findPasswordsByUserId,
+  deletePassword
 } from "../repositeries/userRepositories/userRespositories";
 import { IUser } from "../models/userSchema/userSchema";
+import { IPassword } from "../models/passwordSchema/passwordSchema";
 
 
 
@@ -26,14 +28,14 @@ export const registerUser = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const userData: any = { userName, email, password: hashedPassword };
-    
+
     const newUser = await create(userData);
 
     const token = jwt.sign({ userId: newUser._id }, process.env.SECRET_KEY as string, {
       expiresIn: "7d",
     });
 
-    res.status(201).json({ user: newUser.userName,  token: `Bearer ${token}`});
+    res.status(201).json({ user: newUser.userName, token: `Bearer ${token}` });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Failed to register user" });
@@ -63,7 +65,7 @@ export const userLogin = async (req: Request, res: Response) => {
       }
     );
 
-    res.status(200).json({ user: existingUser.userName,  token: `Bearer ${token}`});
+    res.status(200).json({ user: existingUser.userName, token: `Bearer ${token}` });
   } catch (error) {
     res.status(500).json({ error: "Failed to login User" });
   }
@@ -77,10 +79,10 @@ export const savedPassword = async (req: any, res: Response) => {
 
     const user = await findUserById(userId);
     console.log(1)
-    if(!user){
-      res.status(400).json({error:"No User Found"})
+    if (!user) {
+      res.status(400).json({ error: "No User Found" })
     }
-    const savedPasswordData:any = {
+    const savedPasswordData: any = {
       appName,
       userName,
       password,
@@ -88,7 +90,7 @@ export const savedPassword = async (req: any, res: Response) => {
 
     await savePassword(userId, savedPasswordData);
 
-    res.status(201).json({ message: 'Saved password successfully' });
+    res.status(201).json(savedPasswordData);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: 'Internal server error' });
@@ -114,3 +116,20 @@ export const fetchSavedData = async (req: any, res: Response) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
+export const deleteSavedData = async (req: any, res: Response) => {
+  try {
+    const userId = req.user.userId;
+    const passWord: string = req.body.passWord
+
+    const savedPasswords = await findPasswordsByUserId(userId);
+    let result = savedPasswords
+    if (savedPasswords) {
+      result = await deletePassword(savedPasswords, passWord)
+    }
+    return res.status(200).json(result?.savedPassword);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}

@@ -64,3 +64,16 @@ export const savePassword = async (userId: string, savedPasswordData: ISavedPass
     throw new Error('Failed to save password');
   }
 };
+
+export const deletePassword =async (saveData:IPassword,password:string) => {
+  try {
+    const indexToDelete = saveData.savedPassword.findIndex((item) => item.password == password);
+
+    saveData.savedPassword.splice(indexToDelete, 1);
+    await saveData.save()
+    return saveData
+  } catch (error) {
+    console.log(error);
+    throw new Error('Failed to delete password');
+  }
+}
