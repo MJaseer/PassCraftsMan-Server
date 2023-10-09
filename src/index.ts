@@ -16,12 +16,12 @@ const app = express()
 //     next()
 // })
 
-app.use(cors({
-    origin: 'https://passcraftsman.netlify.app',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  }));
-
+app.use(
+    cors({
+      credentials: true,
+      origin: ['http://localhost:4200','https://passcraftsman.netlify.app' ]
+    })
+  );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"))
