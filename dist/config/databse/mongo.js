@@ -14,4 +14,3 @@ export default () => {
         console.log(`Database Connection failed :${err}`);
     });
 };
-//# sourceMappingURL=mongo.js.map
